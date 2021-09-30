@@ -7,12 +7,13 @@ import { API_URL } from "../unilits/config";
 function Login () {
     const [account, setAccount] = useState("jack755051");
     const [password ,setPassword] = useState("race216"); 
+
     const handleSubmit = async(e) => {
         e.preventDefault();
         let result = await axios.post(`${API_URL}/auth/login`,{ 
             account,
             password,
-        })
+        } ,{withCredentials: true })
         console.log(result); 
     }
 

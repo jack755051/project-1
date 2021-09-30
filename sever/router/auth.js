@@ -27,7 +27,8 @@ const storage = multer.diskStorage({
     // 檔案命名
     filename: function (req, file, cb) {
       console.log(file);
-      cb(null, file.originalname);
+      const ext = file.originalname.split(".").pop()
+      cb(null, `member-${Date.now()}.${ext}`);
     },
   });
 
@@ -49,6 +50,7 @@ const uploader = multer({
         fileSize:1024*1024,
     }
 });
+
 
 
 
@@ -75,9 +77,24 @@ router.post(
         .status(400)
         .json({field:error[0].param, message:error[0].msg});
     }
+    
+    //檢查帳號重複
+
+    let member = await connection.query
+        ("selec t * from member where account = ?",[req.body.account]
+            );
+        if(member.length>0){
+            return next({
+                code:'33011',
+                status:400,
+                message:"此帳號已註冊"
+            })
+        }
+
     //TODO2:確認資料get
     console.log(req.body);
-    console.log(req.file);
+    // console.log(req.file);
+    let filename = req.file?"/uploads/"+req.file.filename:"";
     //TODO3:資料存到資料庫
     //TODO:密碼明文
 
@@ -85,9 +102,9 @@ router.post(
     let create_time = moment().format("YYYY-MM-DD");
     // let hashPWD = await bcrypt.hash(req.body.password ,10)
     let result = await connection.queryAsync(
-        "INSERT INTO member (account,email,password,phone,create_time)VALUES (?);",
+        "INSERT INTO member (account,email,password,phone,create_time,photo)VALUES (?);",
         //直接在裡面await
-        [[req.body.account,req.body.email,await bcrypt.hash(req.body.password ,10),req.body.phone,create_time]]
+        [[req.body.account,req.body.email,await bcrypt.hash(req.body.password ,10),req.body.phone,create_time,filename]]
         );
     //必加
     res.json({});
@@ -95,7 +112,7 @@ router.post(
 
 
 router.post('/login',async(req,res,next) => {
-    // console.log(req.body)
+    console.log(req.body)
     //確認有沒有帳號
     let member = await connection.queryAsync(
         "SELECT * FROM  member WHERE account = ?;",
@@ -115,7 +132,7 @@ router.post('/login',async(req,res,next) => {
     //密碼正確
     //密碼錯誤
 
-    const result =  await bcrypt.compareSync(req.body.password , member.password);
+    const result =  await bcrypt.compare(req.body.password , member.password);
     if (!result) {
         return next({
             status:400,
@@ -123,7 +140,15 @@ router.post('/login',async(req,res,next) => {
         });
     }
 
-    res.json({});
+    let  returnMember = {
+        id:member.id,
+        email:member.email,
+        valid: 1
+    }
+    req.session.member = returnMember ;
+
+
+    res.json({returnMember});
 })
 
 

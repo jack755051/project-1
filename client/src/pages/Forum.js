@@ -9,21 +9,22 @@ import axios from 'axios'
 import {
     // Route,
     withRouter,
-    // NavLink,
+    NavLink,
     // Switch,
     // matchPath,
-    Link
+    // Link
   } from 'react-router-dom'
 
-function Forum(props){
+function Forum({match}){
     
-    console.log(props)
+    // console.log(props)
 
     const [error , setError] = useState(null)
     const [buttonPopup ,setButtonPopup] = useState(false);
     const [forumLists ,setForumLists] = useState([]);
     const [page , setPage] = useState(1);
     const [totalPage ,setTotalPage] = useState(0);
+    
     //前端:先取得正確格式，res.data -> res.data.result 驗證 東西是否壞掉
     //後端:取得總比數/計算總頁數/回復pagination給前端
 
@@ -55,11 +56,11 @@ function Forum(props){
       }
       return pages;
     }
-
+    //分頁--有問題
     useEffect(()=>{
       const getData = async ()=>{
         try{
-          let res = await axios.get(`http://localhost:3001/forum/get?page=${page}`);
+          let res = await axios.get(`http://localhost:3001/forum/?page=${page}`);
             setForumLists(res.data.result)
             setError(null);
             setTotalPage(res.data.pagination.lastPage)
@@ -71,6 +72,7 @@ function Forum(props){
       }
       getData()
     },[page])
+
 
     return (
       <>
@@ -101,23 +103,22 @@ function Forum(props){
                     <th className="w-2/12 p-2">閱讀量/收藏量</th>
                 </tr>
             </thead>
-            {forumLists.map((forumList,index)=>(
+            {forumLists.map((forumList,i)=>{return(
             <tbody className="mx-2 text-center z-40">
             <tr className="border-b-2 border-gray-200 h-14 bg-navy-900 hover:bg-indigo-300 hover:text-black">
               <td className="p-2 xl:w-64 lg:w-56 md:w-48 sm:w-44">{forumList.gameName}</td>
               <td className="-2 xl:w-64 lg:w-56 md:w-48 sm:w-44 text-left px-6">
-                  <a 
-                  href="http://localhost:3000/forumBBS" 
+                  <NavLink to= {`/forumBBS/${forumList.id}`} 
                   className="block hover:text-white">
                     [&nbsp;{forumList.articleType.slice(-2)}&nbsp;]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{forumList.articleTitle}
-                  </a>
+                  </NavLink>
               </td>
               <td className="p-2 xl:w-64 lg:w-56 md:w-48 sm:w-44">
-                <a href="#/" className="block hover:text-white">{forumList.userName}</a>
+                <a href="#/" className="block hover:text-white">{forumList.account}</a>
               </td>
               
               <td className="p-2 xl:w-64 lg:w-56 md:w-48 sm:w-44">
-                {forumList.createdAt.slice(0,10)}
+                {forumList.createdAt}
               </td>
               
               <td className="p-2 xl:w-64 lg:w-56 md:w-48 sm:w-44">
@@ -129,7 +130,7 @@ function Forum(props){
 
 
             )
-            )}
+            })}
             </table>
         <ul className="mt-3 flex justify-center">{getPages()}</ul>
       </div>
@@ -137,5 +138,5 @@ function Forum(props){
     )
 }
 
-export default withRouter (Forum)
+export default Forum
 

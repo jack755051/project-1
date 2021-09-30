@@ -35,7 +35,7 @@ export const getComments = async ()=>{
                 userName: 'Mertioa Ken',
                 userId:'3',
                 comment: '相較於賽博龐克我更愛蒸氣龐克的魔幻',
-                parentId:null,
+                parentId:'2',
                 createdAt: '2021-08-17T01:00:21.010+02:00',
                 image:
                 'https://images.unsplash.com/flagged/photo-1570612861542-284f4c12e75f?ixid=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60',
@@ -62,6 +62,7 @@ export const getComments = async ()=>{
             }, 
     ]
 }
+
 export const createComment = async (text, parentId = null) => {
     return {
       id: Math.random().toString(36).substr(2, 9),

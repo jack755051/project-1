@@ -1,7 +1,7 @@
 import React from 'react'
 
 
-function SearchBar(props) {
+function SearchBar(placeholder, data) {
     return (
         <>
             <form action="/" method="get">

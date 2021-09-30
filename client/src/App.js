@@ -30,31 +30,30 @@ function App() {
   return (
     <Router>
       <>
-
         <MyNavbar/>
         <MyMainContent>
-          <ScrollToTop>
+          {/* <ScrollToTop> */}
             <Switch>
               <Route path="/registration">
                 <Registration/>
               </Route>
-              <Router path="/forumBBS/:id?">
+              <Route path="/forumBBS/:id?">
                 <ForumBBS/>
-              </Router>
-              <Router path="/forum">
+              </Route>
+              <Route path="/forum">
                 <Forum />
-              </Router>
-              <Router path="/login">
+              </Route>
+              <Route path="/login">
                 <Login/>
-              </Router>
+              </Route> 
               <Route exact path="/">
                 <Home/>
               </Route>
-              <Router path="*">
+              <Route path="*">
                 <NotFoundPage />
-              </Router>
+              </Route>
             </Switch>
-          </ScrollToTop>
+          {/* </ScrollToTop> */}
         </MyMainContent>
         <MyFooter />
       </>

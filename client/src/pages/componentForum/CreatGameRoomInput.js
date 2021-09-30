@@ -1,7 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import axios from 'axios';
 // import {API_URL} from '../../unilits/config';
-import moment from 'moment';
 
 
 function CreatGameRoomInput() {
@@ -10,10 +9,7 @@ function CreatGameRoomInput() {
     const[articleType ,setArticleType]= useState("");
     // const[userName ,setUserName]= useState("");
     const [articleContent,setArticleContent] = useState("");
-    const createdAt = moment().format("YYYY-MM-DD")  
 
-
-    
     const submitForum = () =>{
         axios.post("http://localhost:3001/forum/insert",
         {
@@ -21,7 +17,6 @@ function CreatGameRoomInput() {
             articleTitle:articleTitle,
             articleType:articleType,
             articleContent:articleContent,
-            createdAt:createdAt,
         });
     }
 

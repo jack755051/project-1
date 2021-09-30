@@ -1,17 +1,35 @@
 const express = require('express');
-const connection = require('./unilits/db');
-const bodyParser =  require('body-parser');
+require('dotenv').config();
 const cors = require('cors');
-const moment = require ('moment');
-const bcrypt = require('bcrypt');
+const expressSession = require('express-session');
+const path = require('path');
 
 const app = express();
-app.use(cors());
+
+app.use(
+    cors({
+      origin: ['http://localhost:3000'],
+      //為了跨源可以存取cookie
+      //條件是origin不能為"*"(否則很危險)
+      credentials: true,
+    })
+  );
+
+//未知原因導致崩潰
+app.use(expressSession({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  }))
+
 //使用這個中間建材可以讀到
 //重要兩個
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(express.urlencoded({extended:true}));
 //使用這middleware才能解析json資料
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname,"public")))
+// app.use(express.static( .join(__dirname,"react")))
 
 app.use((req, res, next)=>{
     let current = new Date();
@@ -23,61 +41,21 @@ app.use((req, res, next)=>{
     next();
 })
 
+// app.use(expressSession())
+
 app.get('/',function(req, res, next){
     res.send("HOMEPAGE");
 })
-
-// app.get('/forum/get',(req, res, next)=>{
-//     let sqlSelect = "SELECT * FROM forum_article";
-//     connection.query(sqlSelect ,(err,result)=>{
-//         res.send(result);
-//     })
-// })
-// app.get('/forum/get',async function(req, res, next){
-//     let page = req.query.page || 1;
-//     const perPage = 6;
-//     //todo1:count total number
-//     let count = await connection.queryAsync("SELECT COUNT (*) AS total FROM forum_article");
-//     console.log(count);
-//     const total = count[0].total;
-//     const lastPage = Math.ceil(total / perPage);
-//     console.log(total,lastPage);
-
-//     let offset = (page - 1) * perPage;
-//     //todo2:let every page get their data
-
-//     let result = await connection.queryAsync("SELECT * FROM forum_article   LIMIT ? OFFSET ?",
-//     [perPage,offset]);
-
-//     let pagination  = {
-//         total,
-//         perPage,
-//         lastPage,
-//         page,
-//     }
-    
-//     res.json({pagination,result});
-// })
-
-
-// app.post("/forum/insert", async function(req, res, next){
-//     // let current = new Date(+new Date()+8*3600*1000);
-//     // let createdAt = current.toLocaleString().slice(0,19).replace("T","")
-//     let createdAt = moment().format("YYYY-MM-DD"); 
-
-//     let result = await connection.queryAsync(
-//         "INSERT INTO forum_article (gameName, articleTitle,articleContent,articleType,createdAt)VALUES (?);",
-//         [[req.body.gameName,req.body.articleTitle,req.body.articleContent,req.body.articleType,createdAt]]
-//         );
-//     res.json({})
-// })
+let authRouter = require("./router/auth");
+app.use("/auth",authRouter);
 
 let forumRouter = require("./router/forum");
 app.use("/forum",forumRouter);
 
-let authRouter = require("./router/auth");
-app.use("/auth",authRouter);
 
+let BBSRouter = require("./router/forumBBS");
+const { MulterError } = require('multer');
+app.use("/forumBBS",BBSRouter);
 
 app.use((req, res, next)=>{
     console.log("啊啊啊啊，沒有符合的路由");
@@ -89,10 +67,16 @@ app.use((req, res, next)=>{
 })
 
 app.use((err, req, res, next)=>{
-    console.log(err)
+    console.log("來自四個參數的錯誤處理",err)
+    if(err instanceof MulterError){
+        if(err.code === "LIMIT_FILE_SIZE"){
+            return res.status(400).json({message:"檔案太大囉"})
+        }
+    }
     res.status(err.status).json({message:err.code});
 })
 
-app.listen(3001,async function() {
-    console.log("running on port 3001")
+const port = 3001;
+app.listen(port,async function() {
+    console.log(`running on port ${port}`)
 })
